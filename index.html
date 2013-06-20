@@ -10,6 +10,13 @@ body {
   font: 10px sans-serif;
 }
 
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
 .tooltip {
   border:1px solid;
   margin:10px;
@@ -24,6 +31,9 @@ var margin = {top: 20, right: 10, bottom: 20, left: 10};
 var width = 700 - margin.left - margin.right;
 var height = 500 - margin.top - margin.bottom;
 
+var namesWidth = 100;
+var chartWidth = width - namesWidth;
+
 var tooltip = d3.select("body")
     .append("div")
     .attr('class','tooltip')
@@ -37,7 +47,9 @@ var svg = d3.select("body").append("svg")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var colorScale = d3.scale.linear().range(["white", "steelblue"]);
+var colorScale = d3.scale.linear().range(["#e2e6fb", "steelblue"]);
+var x = d3.time.scale().range([0, chartWidth]);
+var y = d3.scale.linear().range([height, 0]);
 
 // this method requires that the first line of the CSV file contains a comma-separated list of column names
 d3.csv("mentions_time_top20.csv", function(data) {
@@ -45,32 +57,37 @@ d3.csv("mentions_time_top20.csv", function(data) {
   var numOfColumns = 0;
   var numOfRows = 0;
   var finalData = [];
+  var playersName = [];
   data.forEach(function(d) {
     //console.log(d);
       for(var propt in d) {
         // check if the property is a number
         if (!isNaN(d[propt])) {
-          //console.log("propt: " + propt + "\t" + d[propt]);
-
-          if (d[propt] > maxValue)
-            maxValue = d[propt];
-
+          var v = parseInt(d[propt]);
+          //console.log("propt: " + propt + "\t" + d[propt]);          
+          if (v>maxValue) {
+            maxValue = v;
+          } 
+          
           var obj = new Object();
           obj.name = d.name;
-          obj.value = d[propt];
-          console.log(obj)
+          obj.value = v;
+          obj.date = propt;
           finalData.push(obj);
         }
       }
+      playersName.push(d.name);
       numOfRows++;
   });
 
+console.log(playersName);
+  //maxValue = d3.max(finalData, function (d) { return d.value; });
   numOfColumns = finalData.length / numOfRows;
 
   console.log("numOfRows= " + numOfRows);
   console.log("numOfColumns= " + numOfColumns);
 
-  var cellWidth = width / numOfColumns;
+  var cellWidth = chartWidth / numOfColumns;
   console.log("cellWidth= " + cellWidth);
   var cellHeight = height / numOfRows;
   console.log("cellHeight= " + cellHeight);
@@ -81,16 +98,16 @@ d3.csv("mentions_time_top20.csv", function(data) {
     .enter()
     .append("rect")
     .attr("x", function (d, i) {
-      var x = cellWidth * (i%numOfColumns);
-      console.log("i: " + i); 
-      console.log("\tx: " + x); 
-      return x;
+      var xVal = cellWidth * (i%numOfColumns);
+      //console.log("i: " + i); 
+      //console.log("\tx: " + x); 
+      return xVal;
     })
     .attr("y", function (d, i) {
-      var y = height - cellHeight * (Math.floor(i/numOfColumns)+1)
-      console.log("i: " + i); 
-      console.log("\ty: " + y)
-      return y;
+      var yVal = height - cellHeight * (Math.floor(i/numOfColumns)+1)
+      //onsole.log("i: " + i); 
+      //console.log("\ty: " + y)
+      return yVal;
     })
     .attr("width", cellWidth)
     .attr("height", cellHeight)
@@ -98,7 +115,7 @@ d3.csv("mentions_time_top20.csv", function(data) {
       return colorScale(d.value);       
     })
     .on("mouseover", function(d) {
-          tooltip.text("Name: " + d.name + "<br>Mentions: " + d.value);
+          tooltip.text("Name: " + d.name + "\nDate" + d.date + "\nMentions: " + d.value);
           tooltip.style("visibility", "visible");
           //this.style.cursor = "hand";
       })
@@ -112,6 +129,35 @@ d3.csv("mentions_time_top20.csv", function(data) {
           //this.style.cursor = "auto";
         })
 
+ // Add an x-axis with label.
+ var xScale = d3.scale.linear()
+                     .domain([7, 19])
+                     .range([0, chartWidth]);
+
+  var xAxis = d3.svg.axis()
+                  .scale(xScale)
+                  .orient("bottom");
+  svg.append("g")
+    .attr("class", "axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis)
+    .append("text")
+      //.attr("class", "label")
+      .attr("x", chartWidth + 70)
+      .attr("y", 15)
+      .attr("text-anchor", "end")
+      .text("Day of July");
+
+   // Y Axis
+   playersName.reverse();
+  svg.selectAll(".players")
+  .data(playersName)
+  .enter()
+  .append("text")
+    .attr("x", function (d, i) { return chartWidth + 10; })
+    .attr("y", function (d, i) { return (i * cellHeight) + cellHeight/2 + 4 })
+    .attr("fill", "black")
+    .text(function (d) { return d; });
 
 });
 
