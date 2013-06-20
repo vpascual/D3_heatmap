@@ -27,12 +27,15 @@ body {
 </style>
   <body>
      <script>
-var margin = {top: 20, right: 10, bottom: 20, left: 10};
+var margin = {top: 20, right: 10, bottom: 20, left: 20};
 var width = 700 - margin.left - margin.right;
 var height = 500 - margin.top - margin.bottom;
 
 var namesWidth = 150;
 var chartWidth = width - namesWidth;
+
+var remarksHeight = 40;
+var chartHeight = height - remarksHeight;
 
 var tooltip = d3.select("body")
     .append("div")
@@ -49,7 +52,7 @@ var svg = d3.select("body").append("svg")
 
 var colorScale = d3.scale.linear().range(["#e2e6fb", "#0a64af"]);
 var x = d3.time.scale().range([0, chartWidth]);
-var y = d3.scale.linear().range([height, 0]);
+var y = d3.scale.linear().range([chartHeight, 0]);
 
 // this method requires that the first line of the CSV file contains a comma-separated list of column names
 d3.csv("mentions_time_top20.csv", function(data) {
@@ -60,12 +63,12 @@ d3.csv("mentions_time_top20.csv", function(data) {
   var playersName = [];
   data.reverse()
   data.forEach(function(d) {
-    //console.log(d);
+    
       for(var propt in d) {
         // check if the property is a number
         if (!isNaN(d[propt])) {
           var v = parseInt(d[propt]);
-          //console.log("propt: " + propt + "\t" + d[propt]);          
+          
           if (v>maxValue) {
             maxValue = v;
           } 
@@ -81,17 +84,17 @@ d3.csv("mentions_time_top20.csv", function(data) {
       numOfRows++;
   });
 
-console.log(playersName);
+
   //maxValue = d3.max(finalData, function (d) { return d.value; });
   numOfColumns = finalData.length / numOfRows;
 
-  console.log("numOfRows= " + numOfRows);
-  console.log("numOfColumns= " + numOfColumns);
+  
+  
 
   var cellWidth = chartWidth / numOfColumns;
-  console.log("cellWidth= " + cellWidth);
-  var cellHeight = height / numOfRows;
-  console.log("cellHeight= " + cellHeight);
+  
+  var cellHeight = chartHeight / numOfRows;
+  
   colorScale.domain([0, maxValue]);
 
   svg.selectAll("rect")
@@ -100,14 +103,14 @@ console.log(playersName);
     .append("rect")
     .attr("x", function (d, i) {
       var xVal = cellWidth * (i%numOfColumns);
-      //console.log("i: " + i); 
-      //console.log("\tx: " + x); 
+      
+      
       return xVal;
     })
     .attr("y", function (d, i) {
-      var yVal = height - cellHeight * (Math.floor(i/numOfColumns)+1)
+      var yVal = chartHeight - cellHeight * (Math.floor(i/numOfColumns)+1)
       //onsole.log("i: " + i); 
-      //console.log("\ty: " + y)
+      
       return yVal;
     })
     .attr("width", cellWidth)
@@ -137,11 +140,11 @@ console.log(playersName);
 
   var xAxis = d3.svg.axis()
                   .scale(xScale)
-                  .tickFormat(function(d) { return d + " Jul"; })
+                  .tickFormat(function(d) { return d + " Jun"; })
                   .orient("bottom");
   svg.append("g")
     .attr("class", "axis")
-    .attr("transform", "translate(0," + height + ")")
+    .attr("transform", "translate(0," + chartHeight + ")")
     .call(xAxis)
     /*.append("text")
       .attr("x", chartWidth + 70)
@@ -151,15 +154,63 @@ console.log(playersName);
 
    // Y Axis
    playersName.reverse();
-  svg.selectAll(".players")
-  .data(playersName)
-  .enter()
-  .append("text")
-    .attr("x", function (d, i) { return chartWidth + 10; })
-    .attr("y", function (d, i) { return (i * cellHeight) + cellHeight/2 + 4 })
-    .attr("fill", "black")
-    .text(function (d) { return d; });
+    svg.selectAll(".players")
+    .data(playersName)
+    .enter()
+    .append("text")
+      .attr("x", chartWidth + 10)
+      .attr("y", function (d, i) { return (i * cellHeight) + cellHeight/2 + 4 })
+      .attr("fill", "black")
+      .text(function (d) { return d; });
 
+    svg.append("text")
+      .attr("x", cellWidth * 8 + cellWidth/2)
+      .attr("y", chartHeight + 30)
+      .attr("font-size", 8)
+      .attr("text-anchor", "middle")
+      .attr("fill", "black")
+      .text("BRA-JAP");      
+
+    svg.append("text")
+      .attr("x", cellWidth * 9 + cellWidth/2)
+      .attr("y", chartHeight + 40)
+      .attr("font-size", 8)
+      .attr("text-anchor", "middle")
+      .attr("fill", "black")
+      .text("MEX-ITA");
+
+    svg.append("text")
+      .attr("x", cellWidth * 9 + cellWidth/2)
+      .attr("y", chartHeight + 30)
+      .attr("font-size", 8)
+      .attr("text-anchor", "middle")
+      .attr("fill", "black")
+      .text("SPA-URU");
+
+    svg.append("text")
+      .attr("x", cellWidth * 10 + cellWidth/2)
+      .attr("y", chartHeight + 30)
+      .attr("font-size", 8)
+      .attr("text-anchor", "middle")
+      .attr("fill", "black")
+      .text("TAH-NIG");
+
+    svg.append("text")
+      .attr("x", cellWidth * 12 + cellWidth/2)
+      .attr("y", chartHeight + 30)
+      .attr("font-size", 8)
+      .attr("text-anchor", "middle")
+      .attr("fill", "black")
+      .text("BRA-MEX");
+
+
+    svg.append("text")
+      .attr("x", cellWidth * 12 + cellWidth/2)
+      .attr("y", chartHeight + 40)
+      .attr("font-size", 8)
+      .attr("text-anchor", "middle")
+      .attr("fill", "black")
+      .text("ITA-JAP");
 });
 
      </script>
