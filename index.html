@@ -31,7 +31,7 @@ var margin = {top: 20, right: 10, bottom: 20, left: 10};
 var width = 700 - margin.left - margin.right;
 var height = 500 - margin.top - margin.bottom;
 
-var namesWidth = 100;
+var namesWidth = 150;
 var chartWidth = width - namesWidth;
 
 var tooltip = d3.select("body")
@@ -47,7 +47,7 @@ var svg = d3.select("body").append("svg")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var colorScale = d3.scale.linear().range(["#e2e6fb", "steelblue"]);
+var colorScale = d3.scale.linear().range(["#e2e6fb", "#0a64af"]);
 var x = d3.time.scale().range([0, chartWidth]);
 var y = d3.scale.linear().range([height, 0]);
 
@@ -58,6 +58,7 @@ d3.csv("mentions_time_top20.csv", function(data) {
   var numOfRows = 0;
   var finalData = [];
   var playersName = [];
+  data.reverse()
   data.forEach(function(d) {
     //console.log(d);
       for(var propt in d) {
@@ -115,7 +116,7 @@ console.log(playersName);
       return colorScale(d.value);       
     })
     .on("mouseover", function(d) {
-          tooltip.text("Name: " + d.name + "\nDate" + d.date + "\nMentions: " + d.value);
+          tooltip.html("<font size='2'><b>Name:</b> " + d.name + "</br><b>Date</b>: " + d.date + "<br><b>Mentions</b>: " + d.value + "</font>");
           tooltip.style("visibility", "visible");
           //this.style.cursor = "hand";
       })
@@ -131,22 +132,22 @@ console.log(playersName);
 
  // Add an x-axis with label.
  var xScale = d3.scale.linear()
-                     .domain([7, 19])
+                     .domain([7, 20])
                      .range([0, chartWidth]);
 
   var xAxis = d3.svg.axis()
                   .scale(xScale)
+                  .tickFormat(function(d) { return d + " Jul"; })
                   .orient("bottom");
   svg.append("g")
     .attr("class", "axis")
     .attr("transform", "translate(0," + height + ")")
     .call(xAxis)
-    .append("text")
-      //.attr("class", "label")
+    /*.append("text")
       .attr("x", chartWidth + 70)
       .attr("y", 15)
       .attr("text-anchor", "end")
-      .text("Day of July");
+      .text("(Day of July)");*/
 
    // Y Axis
    playersName.reverse();
