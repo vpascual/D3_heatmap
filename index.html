@@ -1,0 +1,120 @@
+ <!DOCTYPE html>
+ <html>
+   <head>
+     <script type="text/javascript" src="d3.v3.min.js"></script>
+   </head>
+   <meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.tooltip {
+  border:1px solid;
+  margin:10px;
+  padding: 6px;
+  z-index: 10px;
+}
+
+</style>
+  <body>
+     <script>
+var margin = {top: 20, right: 10, bottom: 20, left: 10};
+var width = 700 - margin.left - margin.right;
+var height = 500 - margin.top - margin.bottom;
+
+var tooltip = d3.select("body")
+    .append("div")
+    .attr('class','tooltip')
+    .style("position", "absolute")
+    .style("visibility", "hidden")
+    .style("background-color", "#ffffff");
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var colorScale = d3.scale.linear().range(["white", "steelblue"]);
+
+// this method requires that the first line of the CSV file contains a comma-separated list of column names
+d3.csv("mentions_time_top20.csv", function(data) {
+  var maxValue = -1;
+  var numOfColumns = 0;
+  var numOfRows = 0;
+  var finalData = [];
+  data.forEach(function(d) {
+    //console.log(d);
+      for(var propt in d) {
+        // check if the property is a number
+        if (!isNaN(d[propt])) {
+          //console.log("propt: " + propt + "\t" + d[propt]);
+
+          if (d[propt] > maxValue)
+            maxValue = d[propt];
+
+          var obj = new Object();
+          obj.name = d.name;
+          obj.value = d[propt];
+          console.log(obj)
+          finalData.push(obj);
+        }
+      }
+      numOfRows++;
+  });
+
+  numOfColumns = finalData.length / numOfRows;
+
+  console.log("numOfRows= " + numOfRows);
+  console.log("numOfColumns= " + numOfColumns);
+
+  var cellWidth = width / numOfColumns;
+  console.log("cellWidth= " + cellWidth);
+  var cellHeight = height / numOfRows;
+  console.log("cellHeight= " + cellHeight);
+  colorScale.domain([0, maxValue]);
+
+  svg.selectAll("rect")
+    .data(finalData)
+    .enter()
+    .append("rect")
+    .attr("x", function (d, i) {
+      var x = cellWidth * (i%numOfColumns);
+      console.log("i: " + i); 
+      console.log("\tx: " + x); 
+      return x;
+    })
+    .attr("y", function (d, i) {
+      var y = height - cellHeight * (Math.floor(i/numOfColumns)+1)
+      console.log("i: " + i); 
+      console.log("\ty: " + y)
+      return y;
+    })
+    .attr("width", cellWidth)
+    .attr("height", cellHeight)
+    .style("fill", function(d, i) {
+      return colorScale(d.value);       
+    })
+    .on("mouseover", function(d) {
+          tooltip.text("Name: " + d.name + "<br>Mentions: " + d.value);
+          tooltip.style("visibility", "visible");
+          //this.style.cursor = "hand";
+      })
+      .on("mousemove", function(){
+        // d3.event must be used to retrieve pageY and pageX. While this is not needed in Chrome, it is needed in Firefox
+        tooltip.style("top", (d3.event.pageY-5)+"px").style("left",(d3.event.pageX+5)+"px");
+
+      })
+      .on("mouseout", function(){
+          tooltip.style("visibility", "hidden");
+          //this.style.cursor = "auto";
+        })
+
+
+});
+
+     </script>
+   </body>
+ </html>
